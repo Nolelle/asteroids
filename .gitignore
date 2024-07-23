@@ -1,0 +1,31 @@
+# Zig build artifacts
+.zig-cache/
+zig-out/
+/release/
+/debug/
+/build/
+/build-*/
+/docgen_tmp/
+
+# Temporary files
+*.tmp
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+*.swp
+*.swo
+*.log
+
+# IDE-specific files
+.idea/
+.vscode/
+*.iml
+
+# Additional files to consider (uncomment if needed)
+# .env # Environment variables
+# .lock # Package lock files (if using a package manager)
+# coverage/ # Code coverage reports
