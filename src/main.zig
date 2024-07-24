@@ -3,18 +3,12 @@
 const rl = @import("raylib");
 
 pub fn main() anyerror!void {
-    // Initialization
-    //--------------------------------------------------------------------------------------
     const screenWidth = 800;
-    const screenHeight = 450;
-
-    rl.initWindow(screenWidth, screenHeight, "raylib-zig [core] example - basic window");
-    defer rl.closeWindow(); // Close window and OpenGL context
-
+    const screenHeight = 600;
+    rl.initWindow(screenWidth, screenHeight, "Zig Asteroids");
+    defer rl.closeWindow(); // Close window and OpenGL context called when main ends.
     rl.setTargetFPS(60); // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
 
-    // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         // Update
         //----------------------------------------------------------------------------------
@@ -25,10 +19,12 @@ pub fn main() anyerror!void {
         //----------------------------------------------------------------------------------
         rl.beginDrawing();
         defer rl.endDrawing();
-
         rl.clearBackground(rl.Color.white);
 
-        rl.drawText("Congrats! You created your first window!", 190, 200, 20, rl.Color.light_gray);
-        //----------------------------------------------------------------------------------
+        const v1 = rl.Vector2{ .x = 400.0, .y = 200.0 };
+        const v2 = rl.Vector2{ .x = 385.0, .y = 225.0 };
+        const v3 = rl.Vector2{ .x = 415.0, .y = 225.0 };
+
+        rl.drawTriangle(v1, v2, v3, rl.Color.black);
     }
 }
