@@ -10,6 +10,7 @@ pub const Ship = struct {
     vertices: [3]rl.Vector2,
     acceleration: f32,
     rotation_speed: f32,
+    damping: f32,
 
     pub fn init() Ship {
         const center_x = 400.0;
@@ -26,60 +27,65 @@ pub const Ship = struct {
                 rl.Vector2{ .x = center_x - size * 0.866, .y = center_y + size * 0.5 },
                 rl.Vector2{ .x = center_x + size * 0.866, .y = center_y + size * 0.5 },
             },
-            .acceleration = 200,
-            .rotation_speed = 10,
+            .acceleration = 300,
+            .rotation_speed = 100,
             .rotation = 0,
+            .damping = 0.98,
         };
     }
 
     pub fn update(self: *Ship) void {
         const delta_time = rl.getFrameTime();
+        const radians_rotation = self.rotation * std.math.pi / 180;
 
-        // Rotate left
+        // Rotate counter-clockwise
         if (rl.isKeyDown(.key_a)) {
             self.rotation -= self.rotation_speed * delta_time;
         }
 
-        // Rotate right
+        // Rotate clockwise
         if (rl.isKeyDown(.key_d)) {
             self.rotation += self.rotation_speed * delta_time;
         }
 
         // Speed up
         if (rl.isKeyDown(.key_w)) {
-            const thrust_x = @cos(self.rotation) * self.acceleration * delta_time;
-            const thrust_y = @sin(self.rotation) * self.acceleration * delta_time;
+            const thrust_x = @sin(radians_rotation) * self.acceleration * delta_time;
+            const thrust_y = -@cos(radians_rotation) * self.acceleration * delta_time;
             self.velocity.x += thrust_x;
             self.velocity.y += thrust_y;
         }
 
         // Slow Down
-        if (rl.isKeyDown(.key_d)) {
-            const thrust_x = @cos(self.rotation) * self.acceleration * delta_time;
-            const thrust_y = @sin(self.rotation) * self.acceleration * delta_time;
+        if (rl.isKeyDown(.key_s)) {
+            const thrust_x = @sin(radians_rotation) * self.acceleration * delta_time;
+            const thrust_y = -@cos(radians_rotation) * self.acceleration * delta_time;
             self.velocity.x -= thrust_x;
             self.velocity.y -= thrust_y;
         }
+
+        self.velocity.x *= self.damping;
+        self.velocity.y *= self.damping;
 
         self.position.x += self.velocity.x * delta_time;
         self.position.y += self.velocity.y * delta_time;
     }
 
     pub fn draw(self: Ship) void {
-        const cos_rot = @cos(self.rotation * std.math.pi / 180);
-        const sin_rot = @sin(self.rotation * std.math.pi / 180);
+        const cos_rotation = @cos(self.rotation * std.math.pi / 180);
+        const sin_rotation = @sin(self.rotation * std.math.pi / 180);
 
         const p1 = rl.Vector2{
-            .x = self.position.x + (self.vertices[0].x - 400.0) * cos_rot - (self.vertices[0].y - 300.0) * sin_rot,
-            .y = self.position.y + (self.vertices[0].x - 400.0) * sin_rot + (self.vertices[0].y - 300.0) * cos_rot,
+            .x = self.position.x + (self.vertices[0].x - 400.0) * cos_rotation - (self.vertices[0].y - 300.0) * sin_rotation,
+            .y = self.position.y + (self.vertices[0].x - 400.0) * sin_rotation + (self.vertices[0].y - 300.0) * cos_rotation,
         };
         const p2 = rl.Vector2{
-            .x = self.position.x + (self.vertices[1].x - 400.0) * cos_rot - (self.vertices[1].y - 300.0) * sin_rot,
-            .y = self.position.y + (self.vertices[1].x - 400.0) * sin_rot + (self.vertices[1].y - 300.0) * cos_rot,
+            .x = self.position.x + (self.vertices[1].x - 400.0) * cos_rotation - (self.vertices[1].y - 300.0) * sin_rotation,
+            .y = self.position.y + (self.vertices[1].x - 400.0) * sin_rotation + (self.vertices[1].y - 300.0) * cos_rotation,
         };
         const p3 = rl.Vector2{
-            .x = self.position.x + (self.vertices[2].x - 400.0) * cos_rot - (self.vertices[2].y - 300.0) * sin_rot,
-            .y = self.position.y + (self.vertices[2].x - 400.0) * sin_rot + (self.vertices[2].y - 300.0) * cos_rot,
+            .x = self.position.x + (self.vertices[2].x - 400.0) * cos_rotation - (self.vertices[2].y - 300.0) * sin_rotation,
+            .y = self.position.y + (self.vertices[2].x - 400.0) * sin_rotation + (self.vertices[2].y - 300.0) * cos_rotation,
         };
 
         const extension_length = 10.0;
