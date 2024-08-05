@@ -89,22 +89,37 @@ pub const Ship = struct {
 
         // Laser Shooting
         if (rl.isKeyDown(.key_space)) {
-            self.shoot;
+            self.shoot();
         }
 
-        var i = 0;
-        while (i < self.laser_count) : (i += 1) {
+        var i: usize = 0;
+        while (i < self.laser_count) {
             if (self.lasers[i].active) {
                 self.lasers[i].update();
+                i += 1;
             } else {
-                self.lasers[i] = self.lasers[self.laser_count - 1];
+                // Remove the inactive laser by swapping it with the last active one
+                if (i != self.laser_count - 1) {
+                    self.lasers[i] = self.lasers[self.laser_count - 1];
+                }
                 self.laser_count -= 1;
-                i -= 1;
+                // Don't increment i, as we need to check the swapped laser
             }
         }
     }
+    fn extendPoint(start: rl.Vector2, end: rl.Vector2, extension_length: f32) rl.Vector2 {
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        const length = std.math.sqrt(dx * dx + dy * dy);
+        const scale = 1 + extension_length / length;
 
-    pub fn draw(self: Ship) void {
+        return .{
+            .x = start.x + dx * scale,
+            .y = start.y + dy * scale,
+        };
+    }
+
+    pub fn draw(self: *Ship) void {
         const cos_rotation = @cos(self.rotation * std.math.pi / 180);
         const sin_rotation = @sin(self.rotation * std.math.pi / 180);
 
@@ -122,14 +137,8 @@ pub const Ship = struct {
         };
 
         const extension_length = 10.0;
-        const p2_extension = rl.Vector2{
-            .x = p1.x + (p2.x - p1.x) * (1 + extension_length / std.math.sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y))),
-            .y = p1.y + (p2.y - p1.y) * (1 + extension_length / std.math.sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y))),
-        };
-        const p3_extension = rl.Vector2{
-            .x = p1.x + (p3.x - p1.x) * (1 + extension_length / std.math.sqrt((p3.x - p1.x) * (p3.x - p1.x) + (p3.y - p1.y) * (p3.y - p1.y))),
-            .y = p1.y + (p3.y - p1.y) * (1 + extension_length / std.math.sqrt((p3.x - p1.x) * (p3.x - p1.x) + (p3.y - p1.y) * (p3.y - p1.y))),
-        };
+        const p2_extension = extendPoint(p1, p2, extension_length);
+        const p3_extension = extendPoint(p1, p3, extension_length);
 
         // Draw the outline of the triangle with extended lines
         rl.drawLineV(p1, p2_extension, self.color);
@@ -137,7 +146,7 @@ pub const Ship = struct {
         rl.drawLineV(p3, p1, self.color);
         rl.drawLineV(p1, p3_extension, self.color);
 
-        for (i = 0; i < self.laser_count; i += 1) {
+        for (0..self.laser_count) |i| {
             self.lasers[i].draw();
         }
     }
@@ -148,11 +157,18 @@ pub const Laser = struct {
     velocity: rl.Vector2,
     active: bool,
     color: rl.Color,
+    length: rl.Vector2,
 
     pub fn init(position: rl.Vector2, velocity: rl.Vector2) Laser {
+        const speed = @sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        const length = rl.Vector2{
+            .x = velocity.x / speed * 20, // Adjust 20 to change laser length
+            .y = velocity.y / speed * 20,
+        };
         return Laser{
             .position = position,
             .velocity = velocity,
+            .length = length,
             .active = true,
             .color = rl.Color.white,
         };
@@ -167,9 +183,13 @@ pub const Laser = struct {
         }
     }
 
-    pub fn draw(self: *Laser) void {
-        if (self.active) {
-            rl.drawPixel(self.position.x, self.position.y, self.color);
+    pub fn draw(self: *const Laser) void {
+         if (self.active) {
+            const end_position = rl.Vector2{
+                .x = self.position.x + self.length.x,
+                .y = self.position.y + self.length.y,
+            };
+            rl.drawLineV(self.position, end_position, self.color);
         }
     }
 };
@@ -182,8 +202,6 @@ pub const Asteroid = struct {
     scale: f32,
     color: rl.Color,
 };
-
-// TODO: ADD SHOOTING FROM SHIP
 
 pub fn main() anyerror!void {
     const screenWidth = 800;
