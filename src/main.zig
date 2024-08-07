@@ -1,6 +1,8 @@
 const rl = @import("raylib");
 const std = @import("std");
 
+const Ship = @import("Ship.zig").Ship;
+
 pub fn main() anyerror!void {
     const screenWidth = 800;
     const screenHeight = 600;
@@ -8,7 +10,7 @@ pub fn main() anyerror!void {
     defer rl.closeWindow();
     rl.setTargetFPS(60);
 
-    var ship: Ship = Ship.init();
+    var ship = Ship.init();
 
     while (!rl.windowShouldClose()) {
         ship.update();
