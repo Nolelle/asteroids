@@ -1,7 +1,7 @@
 const rl = @import("raylib");
 const std = @import("std");
 
-const Laser = @import("Laser.zig");
+const Laser = @import("laser.zig");
 
 pub const Ship = struct {
     position: rl.Vector2,
@@ -91,31 +91,11 @@ pub fn update(self: *Ship) void {
     self.position.y += self.velocity.y * delta_time;
 
     // Screen Wrapping
-    self.applyScreenWrapping();
-
-    // Laser Shooting
-    if (rl.isKeyDown(.key_space)) {
-        self.shoot();
-    }
-
-    var i: usize = 0;
-    while (i < self.laser_count) {
-        if (self.lasers[i].active) {
-            self.lasers[i].update();
-            i += 1;
-        } else {
-            // Remove the inactive laser by swapping it with the last active one
-            if (i != self.laser_count - 1) {
-                self.lasers[i] = self.lasers[self.laser_count - 1];
-            }
-            self.laser_count -= 1;
-            // Don't increment i, as we need to check the swapped laser
-        }
-    }
+    applyScreenWrapping(self);
 }
 
 fn applyScreenWrapping(self: *Ship) void {
-    if (self.psoition.x > 800) {
+    if (self.position.x > 800) {
         self.position.x = 0;
     } else if (self.position.x < 0) {
         self.position.x = 800;
@@ -165,8 +145,4 @@ pub fn draw(self: *Ship) void {
     rl.drawLineV(p2, p3, self.color);
     rl.drawLineV(p3, p1, self.color);
     rl.drawLineV(p1, p3_extension, self.color);
-
-    for (0..self.laser_count) |i| {
-        self.lasers[i].draw();
-    }
 }

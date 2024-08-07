@@ -1,7 +1,7 @@
 const rl = @import("raylib");
 const std = @import("std");
 
-const Ship = @import("Ship.zig").Ship;
+const Ship = @import("ship.zig");
 
 pub fn main() anyerror!void {
     const screenWidth = 800;
@@ -13,12 +13,12 @@ pub fn main() anyerror!void {
     var ship = Ship.init();
 
     while (!rl.windowShouldClose()) {
-        ship.update();
+        Ship.update(&ship);
 
         rl.beginDrawing();
         defer rl.endDrawing();
 
         rl.clearBackground(rl.Color.black);
-        ship.draw();
+        Ship.draw(&ship);
     }
 }
