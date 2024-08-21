@@ -2,7 +2,7 @@ const rl = @import("raylib");
 const std = @import("std");
 
 const Ship = @import("ship.zig");
-const Asteroid = @import("asteroid.zig");
+const Asteroid = @import("asteroid.zig").Asteroid;
 
 pub fn main() anyerror!void {
     const screenWidth = 800;
@@ -12,14 +12,19 @@ pub fn main() anyerror!void {
     rl.setTargetFPS(60);
 
     var ship = Ship.init();
-    const asteroids = [_]Asteroid{ Asteroid.spawnAsteroid(), Asteroid.spawnAsteroid(), Asteroid.spawnAsteroid() };
+    var asteroids = [_]Asteroid{
+        Asteroid.spawnAsteroid(),
+        Asteroid.spawnAsteroid(),
+        Asteroid.spawnAsteroid(),
+        Asteroid.spawnAsteroid(),
+    };
 
     while (!rl.windowShouldClose()) {
         Ship.update(&ship);
 
-        for (asteroids) |*asteroid| {
-            if (asteroid.active) {
-                asteroid.update();
+        for (&asteroids) |*asteroid_ptr| {
+            if (asteroid_ptr.active) {
+                asteroid_ptr.update();
             }
         }
 
@@ -29,9 +34,9 @@ pub fn main() anyerror!void {
         rl.clearBackground(rl.Color.black);
         Ship.draw(&ship);
 
-        for (asteroids) |*asteroid| {
-            if (asteroid.active) {
-                asteroid.draw();
+        for (&asteroids) |*asteroid_ptr| {
+            if (asteroid_ptr.active) {
+                asteroid_ptr.draw();
             }
         }
     }
